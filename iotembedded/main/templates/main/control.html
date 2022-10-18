@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Control Panel{% endblock title %}
+
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'main/styles/control.css' %}">
+{% endblock styles %}
+
+
+{% block mainbody %}
+    <h3 class="devices">Devices</h3>
+    <div class="flex-container">
+        <nav class="box1">
+            <h3>Device1</h3>
+        </nav>
+        <nav class="box2">
+            <p class="status">Status:</p>
+        </nav>
+        <nav>
+            <p class="onoff">On</p>
+        </nav>
+        <nav class="box3">
+            <form method=POST>
+                {% csrf_token %}
+                <button type="submit" value="Device1" name="Toggle" class="toggle"> Toggle </button>
+            </form>
+        </nav>
+    </div>
+{% endblock mainbody %}

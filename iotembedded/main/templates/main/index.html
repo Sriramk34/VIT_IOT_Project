@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home {% endblock title %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static '/main/styles/index.css' %}">
+{% endblock styles %}
+
+{% block mainbody %}
+    <main>
+        <h2>Home</h2>
+        <p class="text-box"> Hello {{username}}!! This is the home page to an IOT based project. Use the control panel to control the
+            devices connected on your network </p>
+    </main>
+
+
+    <footer>
+        <p>IOT Home Automation Project 2022</p>
+    </footer>
+{% endblock mainbody %}

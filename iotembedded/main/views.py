@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect, response
-
+from .models import userDetails, device
 # Create your views here.
 def checklogin(request):
     try:
@@ -36,7 +37,25 @@ def loginout(request):
 
 def index(request):
     if checklogin(request) == 1:
-        return HttpResponse("<h2>Index.html</h2>")
+        userobj = User.objects.get(id = request.session["_auth_user_id"])
+        userdet = userDetails.objects.get(user = userobj)
+        return render(request, 'main/index.html', {
+            "username": userdet.Name
+        })
     else:
         return HttpResponseRedirect("/login")
         #return render(request, 'main/index.html')
+
+def control(request):
+    ids = []
+    names = []
+    userobj = User.objects.get(id = request.session["_auth_user_id"])
+    userdet = userDetails.objects.get(user = userobj)
+    devices = device.objects.filter(DeviceOwner = userdet)
+    for i in devices:
+        ids.append(i.deviceID)
+        names.append(i.deviceName)
+    return render(request, 'main/control.html', {
+        "deviceIDs":ids,
+        "deviceNames":names
+    })
