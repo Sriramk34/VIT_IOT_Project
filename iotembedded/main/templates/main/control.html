@@ -11,21 +11,29 @@
 
 {% block mainbody %}
     <h3 class="devices">Devices</h3>
+    {% for i in devices %}
     <div class="flex-container">
         <nav class="box1">
-            <h3>Device1</h3>
+            <h3>{{i.deviceName}}</h3>
         </nav>
         <nav class="box2">
             <p class="status">Status:</p>
         </nav>
         <nav>
-            <p class="onoff">On</p>
+            <p class="onoff">
+                {% if i.deviceStatus %}
+                    ON
+                {% else %}
+                    OFF
+                {% endif %}</p>
         </nav>
         <nav class="box3">
             <form method=POST>
                 {% csrf_token %}
-                <button type="submit" value="Device1" name="Toggle" class="toggle"> Toggle </button>
+                <button type="submit" value="{{i.deviceID}}" name="Toggle" class="toggle"> Toggle </button>
             </form>
         </nav>
     </div>
+    <br>
+    {% endfor %}
 {% endblock mainbody %}

@@ -47,15 +47,26 @@ def index(request):
         #return render(request, 'main/index.html')
 
 def control(request):
+    if request.method == "POST":
+        ID = request.POST['Toggle']
+        temp = device.objects.get(deviceID=ID)
+        temp.deviceStatus = not temp.deviceStatus 
+        temp.save()
+        
     ids = []
     names = []
+    st = []
     userobj = User.objects.get(id = request.session["_auth_user_id"])
     userdet = userDetails.objects.get(user = userobj)
     devices = device.objects.filter(DeviceOwner = userdet)
     for i in devices:
         ids.append(i.deviceID)
         names.append(i.deviceName)
+        if i.deviceStatus == True:
+            st.append("ON")
+        else:
+            st.append("OFF")
+    print(st)
     return render(request, 'main/control.html', {
-        "deviceIDs":ids,
-        "deviceNames":names
+        "devices":devices
     })
