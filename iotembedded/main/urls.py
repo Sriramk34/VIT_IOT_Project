@@ -6,6 +6,6 @@ urlpatterns = [
     path('index/', views.index),
     path('login/', views.loginout),
     path('control/', views.control),
-    #path('report/', views.report),
+    #path('<username>/', views.update),
     #path('admin/', views.adminPanel),
 ]

@@ -1,9 +1,15 @@
+from http import client
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect, response
 from .models import userDetails, device
+from paho.mqtt import client as mqtt_client
+import random
 # Create your views here.
+
+connected = None
+
 def checklogin(request):
     try:
         if request.session["_auth_user_id"] != None:
@@ -12,6 +18,36 @@ def checklogin(request):
             return 0
     except:
         return 0
+
+
+def connect_mqtt():
+    broker = 'localhost'
+    port = 1883
+    client_id = f'python-mqtt-{random.randint(0, 1000)}'
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT Broker!")
+        else:
+            print("Failed to connect, return code %d\n", rc)
+
+    client = mqtt_client.Client(client_id)
+    client.username_pw_set("abc", "abc")
+    client.on_connect = on_connect
+    client.connect(broker, port)
+    global connected
+    connected = client
+    return client
+
+def publish( message):
+    topic = "python/mqtt"
+    msg_count = 0
+    msg = message
+    global connected
+    client = connected
+    result = client.publish(topic, msg)
+    status = result[0]
+        
+
 
 def empty(request):
     return HttpResponseRedirect('index/')
@@ -28,6 +64,7 @@ def loginout(request):
         user = authenticate(username = usern, password = pwd)
         if user is not None:
             login(request, user)
+            connect_mqtt()
             #print(request.session["_auth_user_id"])
         else:
             return HttpResponse("<h2>Please Check your Username or Password</h2>")
@@ -50,8 +87,10 @@ def control(request):
     if request.method == "POST":
         ID = request.POST['Toggle']
         temp = device.objects.get(deviceID=ID)
+        publish(str(temp.deviceStatus))
         temp.deviceStatus = not temp.deviceStatus 
         temp.save()
+        
         
     ids = []
     names = []
