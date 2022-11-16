@@ -133,7 +133,8 @@ def report(request):
             graphtype =0
         userid = User.objects.get(id = request.session["_auth_user_id"])
         name = userid.first_name
-        data = list(sensor.objects.filter(UserID = userid))
+        data = list(sensor.objects.filter(UserID = userid).order_by('time'))
+        print(data)
         print("Name: " + name)
         a = []
         b = []
@@ -149,6 +150,22 @@ def report(request):
             'data': j, 'type':graphtype, "N":len(a)
         })
     else:
+        graphtype = 0
+        userid = User.objects.get(id = request.session["_auth_user_id"])
+        name = userid.first_name
+        data = list(sensor.objects.filter(UserID = userid).order_by('time'))
+        print(data)
+        print("Name: " + name)
+        a = []
+        b = []
+        print(data)
+        for i in range(len(data)):
+            temp = str(data[i].time)
+            print(temp)
+            a.append(temp[0:16])
+            print(a[i])
+            b.append(data[i].data)
+        j = jsonparse(a,b, graphtype)
         return render(request, 'main/report.html',{
-            'File': "Default.jpg",
+            'data': j, 'type':graphtype, "N":len(a)
         })
