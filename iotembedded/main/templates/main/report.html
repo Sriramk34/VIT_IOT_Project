@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static  %}
+{% block title %}Report {% endblock title %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'main/styles/report.css' %}">
+{% endblock styles %}
+
+
+{% block mainbody %}
+<br><br>
+<div>
+    <img src="{%static ''%}main/images/Default.jpg" alt="bar graph" class='imgbox'>
+</div>
+<nav class="box3">
+    
+    <form action="#" method=POST>
+        {%csrf_token%}
+        <input type="submit" value="Generate" class="generate">
+    </form>
+</nav>
+
+{% endblock mainbody %}

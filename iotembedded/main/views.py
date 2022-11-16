@@ -3,9 +3,10 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect, response
-from .models import userDetails, device
+from .models import userDetails, device, sensor
 from paho.mqtt import client as mqtt_client
 import random
+import matplotlib.pyplot as plt
 # Create your views here.
 
 connected = None
@@ -109,3 +110,27 @@ def control(request):
     return render(request, 'main/control.html', {
         "devices":devices
     })
+
+def report(request):
+    if request.method == 'POST':
+        userid = User.objects.get(id = request.session["_auth_user_id"])
+        name = userid.first_name
+        data = sensor.objects.filter(UserID = userid)
+        print("Name: " + name)
+        filename = "C:\\Users\srira\Desktop\Django\EmbeddedIOTProject\VIT_IOT_Project\iotembedded\main\static\main\images/" + name
+        a = []
+        b = []
+        for i in range(len(data)):
+            a[i] = data[i].time
+            b[i] = data[i].data
+        plt.plot(b,a)
+        plt.xlabel('Time')
+        plt.ylabel('Humidity')
+        plt.savefig(filename)
+        return render(request, 'main/report.html',{
+            'File': f"{name}.png",
+        })
+    else:
+        return render(request, 'main/report.html',{
+            'File': "Default.jpg",
+        })

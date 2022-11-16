@@ -1,4 +1,4 @@
-
+import datetime
 from enum import unique
 from tokenize import Name
 from django.db import models
@@ -20,3 +20,10 @@ class device(models.Model):
     deviceID = models.IntegerField(unique=True) #True - On   False - Off
     def __str__(self):
         return f"Device Name:{self.deviceName} "
+
+class sensor(models.Model):
+    UserID = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
+    time = models.DateTimeField(default=datetime.datetime, blank=True)
+    data = models.FloatField(blank=False)
+
+
