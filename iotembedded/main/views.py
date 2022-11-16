@@ -6,10 +6,22 @@ from django.http import HttpResponse, HttpResponseRedirect, response
 from .models import userDetails, device, sensor
 from paho.mqtt import client as mqtt_client
 import random
-import matplotlib.pyplot as plt
+import json
 # Create your views here.
 
 connected = None
+def jsonparse(a,b, graph):
+    res = []
+    for i in range(len(a)):
+        temp = {}
+        if graph == 0:
+            temp['x'] = a[i]
+        else:
+            temp['x'] = i
+        temp['y'] = b[i]
+        res.append(temp)
+    return json.dumps(res, indent=4)
+
 
 def checklogin(request):
     try:
@@ -39,6 +51,7 @@ def connect_mqtt():
     connected = client
     return client
 
+
 def publish( message):
     topic = "python/mqtt"
     msg_count = 0
@@ -49,9 +62,9 @@ def publish( message):
     status = result[0]
         
 
-
 def empty(request):
     return HttpResponseRedirect('index/')
+
 
 def loginout(request):
     if checklogin(request) == 1:
@@ -73,6 +86,7 @@ def loginout(request):
     else:
         return render(request, 'main/login.html')
 
+
 def index(request):
     if checklogin(request) == 1:
         userobj = User.objects.get(id = request.session["_auth_user_id"])
@@ -84,6 +98,7 @@ def index(request):
         return HttpResponseRedirect("/login")
         #return render(request, 'main/index.html')
 
+
 def control(request):
     if request.method == "POST":
         ID = request.POST['Toggle']
@@ -91,8 +106,6 @@ def control(request):
         publish(str(temp.deviceStatus))
         temp.deviceStatus = not temp.deviceStatus 
         temp.save()
-        
-        
     ids = []
     names = []
     st = []
@@ -111,24 +124,29 @@ def control(request):
         "devices":devices
     })
 
+
 def report(request):
     if request.method == 'POST':
+        if str(request.POST['generate']).lower() == 'scatter':
+            graphtype = 1
+        else:
+            graphtype =0
         userid = User.objects.get(id = request.session["_auth_user_id"])
         name = userid.first_name
-        data = sensor.objects.filter(UserID = userid)
+        data = list(sensor.objects.filter(UserID = userid))
         print("Name: " + name)
-        filename = "C:\\Users\srira\Desktop\Django\EmbeddedIOTProject\VIT_IOT_Project\iotembedded\main\static\main\images/" + name
         a = []
         b = []
+        print(data)
         for i in range(len(data)):
-            a[i] = data[i].time
-            b[i] = data[i].data
-        plt.plot(b,a)
-        plt.xlabel('Time')
-        plt.ylabel('Humidity')
-        plt.savefig(filename)
+            temp = str(data[i].time)
+            print(temp)
+            a.append(temp[0:16])
+            print(a[i])
+            b.append(data[i].data)
+        j = jsonparse(a,b, graphtype)
         return render(request, 'main/report.html',{
-            'File': f"{name}.png",
+            'data': j, 'type':graphtype, "N":len(a)
         })
     else:
         return render(request, 'main/report.html',{

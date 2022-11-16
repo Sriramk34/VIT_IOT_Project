@@ -23,7 +23,7 @@ class device(models.Model):
 
 class sensor(models.Model):
     UserID = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=datetime.datetime, blank=True)
+    time = models.DateTimeField(blank=True)
     data = models.FloatField(blank=False)
 
 

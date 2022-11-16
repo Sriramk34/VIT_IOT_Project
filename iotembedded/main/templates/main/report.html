@@ -5,19 +5,74 @@
 {% block styles %}
 <link rel="stylesheet" href="{% static 'main/styles/report.css' %}">
 {% endblock styles %}
-
+{% block script %} <script src="{%static 'main/Scripts/Chart.js' %}" > </script>
+{% endblock script %}
 
 {% block mainbody %}
 <br><br>
 <div>
-    <img src="{%static ''%}main/images/Default.jpg" alt="bar graph" class='imgbox'>
+    <!-- <img src="{%static ''%}main/images/Default.jpg" alt="bar graph" class='imgbox'> -->
+    <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
 </div>
+<br><br>
 <nav class="box3">
-    
     <form action="#" method=POST>
         {%csrf_token%}
-        <input type="submit" value="Generate" class="generate">
+        <div class="divplot">
+            <div class="plot">
+                <input type="submit" value="Line" class="generate", name='generate'>
+            </div>
+            <div class="plot">
+                <input type="submit" value="Scatter" class="generate", name='generate'>
+            </div>
+        </div> 
     </form>
 </nav>
 
 {% endblock mainbody %}
+
+{% block scripttext %}
+<script>
+    const xy = {{data | safe}};
+    sensordata = [];
+    label = [];
+    for(let i = 0; i<{{N}}; i++){
+        sensordata[i] = xy[i]['y'];
+        label[i] = xy[i]['x'];
+    }
+    //console.log(label);
+    if( {{type}} == 1){
+        new Chart("myChart", {
+            type: "scatter",
+            data: {
+              datasets: [{
+                pointRadius: 4,
+                pointBackgroundColor: "rgb(0,0,255)",
+                data: xy
+              }]
+            },
+            options: {
+              legend: {display: false},
+              //scales:{ xAxes: [{ticks: {min: 40, max:160}}], yAxes: [{ticks: {min: 6, max:16}}],}
+            }
+          });
+    }else{
+        new Chart("myChart", {
+            type: "line",
+            data: {
+                labels: label,
+                datasets: [{
+                  data: sensordata,
+                  fill: false,
+                  borderColor: 'rgb(75, 192, 192)',
+                  tension: 0.1
+                }]
+            },
+            options: {
+                legend: {display: false},
+            }
+        });
+    }
+    
+</script>
+{% endblock scripttext %}

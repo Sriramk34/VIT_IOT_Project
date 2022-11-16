@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}{% endblock title %}</title>
-    <link rel="stylesheet" href="{% static 'main/styles/index-style.css' %}">
+    <link rel="stylesheet" href="{% static 'main/styles/index.css' %}">
     {% block styles %}{% endblock styles %}
+    
 </head>
-
+{% block script %}{% endblock script %}
 <body>
 
     <div class="container">
@@ -27,5 +28,5 @@
         {% block mainbody %}{% endblock mainbody %}
     </div>
 </body>
-
+{% block scripttext %}{% endblock scripttext %}
 </html>
