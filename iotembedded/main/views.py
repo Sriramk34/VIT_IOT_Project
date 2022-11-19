@@ -7,6 +7,8 @@ from .models import userDetails, device, sensor
 from paho.mqtt import client as mqtt_client
 import random
 import json
+from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 connected = None
@@ -79,7 +81,6 @@ def loginout(request):
         if user is not None:
             login(request, user)
             connect_mqtt()
-            #print(request.session["_auth_user_id"])
         else:
             return HttpResponse("<h2>Please Check your Username or Password</h2>")
         return HttpResponseRedirect("/index/")
@@ -96,76 +97,92 @@ def index(request):
         })
     else:
         return HttpResponseRedirect("/login")
-        #return render(request, 'main/index.html')
 
 
 def control(request):
-    if request.method == "POST":
-        ID = request.POST['Toggle']
-        temp = device.objects.get(deviceID=ID)
-        publish(str(temp.deviceStatus))
-        temp.deviceStatus = not temp.deviceStatus 
-        temp.save()
-    ids = []
-    names = []
-    st = []
-    userobj = User.objects.get(id = request.session["_auth_user_id"])
-    userdet = userDetails.objects.get(user = userobj)
-    devices = device.objects.filter(DeviceOwner = userdet)
-    for i in devices:
-        ids.append(i.deviceID)
-        names.append(i.deviceName)
-        if i.deviceStatus == True:
-            st.append("ON")
-        else:
-            st.append("OFF")
-    print(st)
-    return render(request, 'main/control.html', {
-        "devices":devices
-    })
-
-
-def report(request):
-    if request.method == 'POST':
-        if str(request.POST['generate']).lower() == 'scatter':
-            graphtype = 1
-        else:
-            graphtype =0
-        userid = User.objects.get(id = request.session["_auth_user_id"])
-        name = userid.first_name
-        data = list(sensor.objects.filter(UserID = userid).order_by('time'))
-        print(data)
-        print("Name: " + name)
-        a = []
-        b = []
-        print(data)
-        for i in range(len(data)):
-            temp = str(data[i].time)
-            print(temp)
-            a.append(temp[0:16])
-            print(a[i])
-            b.append(data[i].data)
-        j = jsonparse(a,b, graphtype)
-        return render(request, 'main/report.html',{
-            'data': j, 'type':graphtype, "N":len(a)
+    if checklogin(request) == 1:
+        if request.method == "POST":
+            ID = request.POST['Toggle']
+            temp = device.objects.get(deviceID=ID)
+            publish(str(temp.deviceID) + "_" + str(temp.deviceStatus))
+            temp.deviceStatus = not temp.deviceStatus 
+            temp.save()
+        ids = []
+        names = []
+        st = []
+        userobj = User.objects.get(id = request.session["_auth_user_id"])
+        userdet = userDetails.objects.get(user = userobj)
+        devices = device.objects.filter(DeviceOwner = userdet)
+        for i in devices:
+            ids.append(i.deviceID)
+            names.append(i.deviceName)
+            if i.deviceStatus == True:
+                st.append("ON")
+            else:
+                st.append("OFF")
+        print(st)
+        return render(request, 'main/control.html', {
+            "devices":devices
         })
     else:
-        graphtype = 0
-        userid = User.objects.get(id = request.session["_auth_user_id"])
-        name = userid.first_name
-        data = list(sensor.objects.filter(UserID = userid).order_by('time'))
-        print(data)
-        print("Name: " + name)
-        a = []
-        b = []
-        print(data)
-        for i in range(len(data)):
-            temp = str(data[i].time)
-            print(temp)
-            a.append(temp[0:16])
-            print(a[i])
-            b.append(data[i].data)
-        j = jsonparse(a,b, graphtype)
-        return render(request, 'main/report.html',{
-            'data': j, 'type':graphtype, "N":len(a)
-        })
+        return HttpResponseRedirect("/login")
+
+def report(request):
+    if checklogin(request):
+        if request.method == 'POST':
+            if str(request.POST['generate']).lower() == 'update':
+                graphtype = 0
+                publish("update")
+            elif str(request.POST['generate']).lower() == 'scatter':
+                graphtype = 1
+            else:
+                graphtype =0
+            userid = User.objects.get(id = request.session["_auth_user_id"])
+            name = userid.first_name
+            data = list(sensor.objects.filter(UserID = userid).order_by('time'))
+            print(data)
+            print("Name: " + name)
+            a = []
+            b = []
+            print(data)
+            for i in range(len(data)):
+                temp = str(data[i].time)
+                print(temp)
+                a.append(temp[0:16])
+                print(a[i])
+                b.append(data[i].data)
+            j = jsonparse(a,b, graphtype)
+            return render(request, 'main/report.html',{
+                'data': j, 'type':graphtype, "N":len(a)
+            })
+        else:
+            graphtype = 0
+            userid = User.objects.get(id = request.session["_auth_user_id"])
+            name = userid.first_name
+            data = list(sensor.objects.filter(UserID = userid).order_by('time'))
+            print(data)
+            print("Name: " + name)
+            a = []
+            b = []
+            print(data)
+            for i in range(len(data)):
+                temp = str(data[i].time)
+                print(temp)
+                a.append(temp[0:16])
+                print(a[i])
+                b.append(data[i].data)
+            j = jsonparse(a,b, graphtype)
+            return render(request, 'main/report.html',{
+                'data': j, 'type':graphtype, "N":len(a)
+            })
+    else:
+        return HttpResponseRedirect("/login")
+
+@csrf_exempt
+def temp(request):
+    if request.method == 'POST':
+        userid = User.objects.get(id = request.POST['ID'])
+        s = sensor(UserID = userid,data = request.POST['Data'])
+        s.save()
+    return render(request, 'main/temp.html')
+

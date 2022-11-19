@@ -6,7 +6,8 @@ urlpatterns = [
     path('index/', views.index),
     path('login/', views.loginout),
     path('control/', views.control),
-    path('report/', views.report)
+    path('report/', views.report),
+    path('temp', views.temp)
     #path('<username>/', views.update),
     #path('admin/', views.adminPanel),
 ]

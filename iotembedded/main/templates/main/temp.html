@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sensor Data{% endblock title %}
+
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'main/styles/temp.css' %}">
+{% endblock styles %}
+
+{% block mainbody %}
+    
+    <h3>Add Data Form</h3>
+    <form action="" method=POST>
+        <input type="number" name="ID">
+        <input type="text" name="Data">
+        <input type="submit" value="Add">
+    </form>
+{% endblock mainbody %}
